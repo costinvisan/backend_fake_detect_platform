@@ -52,7 +52,7 @@ func initializeRoutes() {
 		// Ensure that the user is logged in by using the middleware
 		articleRoutes.POST("/create", ensureLoggedIn(), createArticle)
 
-		//articleRoutes.POST("/check", similaritiesArticle)
+		articleRoutes.GET("/check", similaritiesArticle)
 	}
 
 }
