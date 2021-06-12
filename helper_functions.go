@@ -16,7 +16,6 @@ type ArticleProccesed struct {
 	WordCleanText         string
 	WordTitle             string
 	RankedPhraseCleanText string
-	RankedPhraseTitle     string
 	RankedSentences       []string
 	Similarities          []string
 }
@@ -44,19 +43,19 @@ func append_words(a []string, b []string) []string {
 	return res
 }
 
-func uniqueNonEmptyElementsOf(s []string) []string {
-	unique := make(map[string]bool, len(s))
-	us := make([]string, len(unique))
-	for _, elem := range s {
-		if len(elem) != 0 {
-			if !unique[elem] {
-				us = append(us, elem)
-				unique[elem] = true
-			}
-		}
-	}
-	return us
-}
+// func uniqueNonEmptyElementsOf(s []string) []string {
+// 	unique := make(map[string]bool, len(s))
+// 	us := make([]string, len(unique))
+// 	for _, elem := range s {
+// 		if len(elem) != 0 {
+// 			if !unique[elem] {
+// 				us = append(us, elem)
+// 				unique[elem] = true
+// 			}
+// 		}
+// 	}
+// 	return us
+// }
 
 func processArticleByUrl(url string) ArticleProccesed {
 	g := goose.New()
@@ -94,7 +93,6 @@ func processArticleByUrl(url string) ArticleProccesed {
 
 	// Get all phrases order by weight.
 	rankedPhraseCleanText := textrank.FindPhrases(tr1)[0]
-	rankedPhraseTitle := textrank.FindPhrases(tr2)[0]
 
 	// Get all words order by weight.
 	wordCleanText := textrank.FindSingleWords(tr1)[0]
@@ -115,32 +113,28 @@ func processArticleByUrl(url string) ArticleProccesed {
 		WordTitle:     wordTitle.Word,
 		RankedPhraseCleanText: rankedPhraseCleanText.Left + " " +
 			rankedPhraseCleanText.Right,
-		RankedPhraseTitle: rankedPhraseTitle.Left + " " +
-			rankedPhraseTitle.Right,
 		RankedSentences: rankedSentences,
 	}
 }
 
 func compare_articles(mainArticle string, toCompareArticle string) []string {
-	mainArticleArray := strings.Split(mainArticle, ".")
-	toCompareArticleArray := strings.Split(toCompareArticle, ".")
-
-	var mainArticleArrayCleaned []string
-	for _, value := range mainArticleArray {
-		mainArticleArrayCleaned = append(mainArticleArrayCleaned, strings.TrimSpace(value))
-	}
-
-	var toCompareArticleArrayCleaned []string
-	for _, value := range toCompareArticleArray {
-		toCompareArticleArrayCleaned = append(toCompareArticleArrayCleaned, strings.TrimSpace(value))
-	}
+	mainArticleArray := strings.Split(strings.ReplaceAll(mainArticle, " ", ""), ".")
+	toCompareArticleArray := strings.Split(strings.ReplaceAll(toCompareArticle, " ", ""), ".")
 
 	var similarities []string
-	for _, value := range mainArticleArrayCleaned {
-		similarities = append(similarities, compare_articles_text(toCompareArticleArrayCleaned, value)...)
+	for _, value := range mainArticleArray {
+		similarities = append(similarities, compare_articles_text(toCompareArticleArray, value)...)
 	}
 
-	similarities = uniqueNonEmptyElementsOf(similarities)
-
-	return similarities
+	unique := make(map[string]bool, len(similarities))
+	us := make([]string, len(unique))
+	for _, elem := range similarities {
+		if len(elem) != 0 {
+			if !unique[elem] {
+				us = append(us, elem)
+				unique[elem] = true
+			}
+		}
+	}
+	return us
 }

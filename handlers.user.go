@@ -10,6 +10,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type authenticate struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
 func showLoginPage(c *gin.Context) {
 	// Call the render function with the name of the template to render
 	render(c, gin.H{
@@ -18,27 +23,44 @@ func showLoginPage(c *gin.Context) {
 }
 
 func performLogin(c *gin.Context) {
-	// Obtain the POSTed username and password values
-	username := c.PostForm("username")
-	password := c.PostForm("password")
+	var body authenticate
+	c.ShouldBindJSON(&body)
+	if (authenticate{} == body) {
 
-	// Check if the username/password combination is valid
-	if isUserValid(username, password) {
-		// If the username/password is valid set the token in a cookie
-		token := generateSessionToken()
-		c.SetCookie("token", token, 3600, "", "", false, true)
-		c.Set("is_logged_in", true)
-		c.SecureJSON(http.StatusOK, token)
-		// render(c, gin.H{
-		// 	"title": "Successful Login"}, "login-successful.html")
+		username := c.PostForm("username")
+		password := c.PostForm("password")
 
+		// Check if the username/password combination is valid
+		if isUserValid(username, password) {
+			// If the username/password is valid set the token in a cookie
+			token := generateSessionToken()
+			c.SetCookie("token", token, 3600, "", "", false, true)
+			c.Set("is_logged_in", true)
+			c.SecureJSON(http.StatusOK, token)
+			render(c, gin.H{
+				"title": "Successful Login"}, "login-successful.html")
+
+		} else {
+			// If the username/password combination is invalid,
+			// show the error message on the login page
+			c.HTML(http.StatusBadRequest, "login.html", gin.H{
+				"ErrorTitle":   "Login Failed",
+				"ErrorMessage": "Invalid credentials provided"})
+		}
 	} else {
-		// If the username/password combination is invalid,
-		// show the error message on the login page
-		c.HTML(http.StatusBadRequest, "login.html", gin.H{
-			"ErrorTitle":   "Login Failed",
-			"ErrorMessage": "Invalid credentials provided"})
+		username := body.Username
+		password := body.Password
+
+		if isUserValid(username, password) {
+			token := generateSessionToken()
+			c.SecureJSON(http.StatusOK, token)
+		} else {
+			c.SecureJSON(http.StatusOK, "")
+		}
+
 	}
+	// Obtain the POSTed username and password values
+
 }
 
 func generateSessionToken() string {

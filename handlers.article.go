@@ -80,14 +80,9 @@ func similaritiesArticle(c *gin.Context) {
 
 	mainArticle := processArticleByUrl(body.Url)
 
-	keyWordsCleanText := []string{mainArticle.WordCleanText, mainArticle.RankedPhraseCleanText}
-	keyWordsTitle := []string{mainArticle.WordTitle}
-
-	queryArray := append_words(keyWordsTitle, keyWordsCleanText)
-
-	querySearchGoogle := strings.Join(queryArray, " ")
-
-	fmt.Println(querySearchGoogle)
+	querySearchGoogle := strings.Join(append_words(
+		[]string{mainArticle.WordCleanText, mainArticle.RankedPhraseCleanText},
+		[]string{mainArticle.WordTitle}), " ")
 
 	var filteredResults []string
 	searchResults, _ := googlesearch.Search(c, querySearchGoogle)
@@ -99,7 +94,7 @@ func similaritiesArticle(c *gin.Context) {
 			filteredResults = append(filteredResults, u.String())
 		}
 	}
-	fmt.Println(filteredResults)
+
 	var otherArticlesFound []ArticleProccesed
 	for _, value := range filteredResults {
 		otherArticlesFound = append(otherArticlesFound, processArticleByUrl(value))
@@ -110,8 +105,7 @@ func similaritiesArticle(c *gin.Context) {
 		fmt.Println(err)
 	}
 
-	wikiSimilarities := compare_articles(mainArticle.CleanText, articleWiki.Content)
-	articleWiki.Similarities = wikiSimilarities
+	articleWiki.Similarities = compare_articles(mainArticle.CleanText, articleWiki.Content)
 
 	var otherArticlesSimilarities [][]string
 	for _, value := range otherArticlesFound {

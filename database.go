@@ -1,17 +1,19 @@
 package main
 
-import "github.com/jinzhu/gorm"
+import (
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
+)
 
 var DB *gorm.DB
 
 func ConnectDataBase() {
-	database, err := gorm.Open("sqlite3", "test.db")
-
+	database, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
 	if err != nil {
-		panic("Failed to connect to database!")
+		panic("failed to connect database")
 	}
 
-	database.AutoMigrate(&user{}, &ArticleProccesed{})
+	database.AutoMigrate(&user{})
 
 	DB = database
 }
