@@ -2,44 +2,44 @@
 
 package main
 
-import "errors"
+import (
+	"gorm.io/gorm"
+)
 
 type article struct {
-	ID      int    `json:"id"`
+	gorm.Model
 	Title   string `json:"title"`
-	Content string `json:"content"`
-}
-
-// For this demo, we're storing the article list in memory
-// In a real application, this list will most likely be fetched
-// from a database or from static files
-var articleList = []article{
-	article{ID: 1, Title: "Article 1", Content: "Article 1 body"},
-	article{ID: 2, Title: "Article 2", Content: "Article 2 body"},
+	Url     string `json:"url"`
+	Rating  int    `json:"rating"`
+	User_id int    `json:"user_id"`
 }
 
 // Return a list of all the articles
 func getAllArticles() []article {
+	var articleList []article
+	DB_article.Find(&articleList)
 	return articleList
 }
 
 // Fetch an article based on the ID supplied
-func getArticleByID(id int) (*article, error) {
-	for _, a := range articleList {
-		if a.ID == id {
-			return &a, nil
-		}
-	}
-	return nil, errors.New("Article not found")
+func getArticleByID(id int) article {
+	var article article
+	DB_article.Find(&article, id)
+	return article
+}
+
+func getArticleByUserID(id int) []article {
+	var articles []article
+	DB_article.Where("user_id = ?", id).Find(&articles)
+	return articles
 }
 
 // Create a new article with the title and content provided
-func createNewArticle(title, content string) (*article, error) {
+func createNewArticle(title, url string, rating, user_id int) (*article, error) {
 	// Set the ID of a new article to one more than the number of articles
-	a := article{ID: len(articleList) + 1, Title: title, Content: content}
+	a := article{Title: title, Url: url, Rating: rating, User_id: user_id}
 
 	// Add the article to the list of articles
-	articleList = append(articleList, a)
-
+	DB_article.Create(&a)
 	return &a, nil
 }

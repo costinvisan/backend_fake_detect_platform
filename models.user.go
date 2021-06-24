@@ -17,16 +17,15 @@ type user struct {
 }
 
 // Check if the username and password combination is valid
-func isUserValid(username, password string) bool {
+func isUserValid(username, password string) user {
 	var userList []user
-	DB.Find(&userList)
+	DB_user.Find(&userList)
 	for _, u := range userList {
-		fmt.Println("User:" + username + "\nPassword:" + password)
 		if u.Username == username && u.Password == password {
-			return true
+			return u
 		}
 	}
-	return false
+	return user{}
 }
 
 // Register a new user with the given username and password
@@ -40,7 +39,7 @@ func registerNewUser(username, password string) (*user, error) {
 
 	u := user{Username: username, Password: password}
 
-	DB.Create(&u)
+	DB_user.Create(&u)
 
 	return &u, nil
 }
@@ -48,11 +47,24 @@ func registerNewUser(username, password string) (*user, error) {
 // Check if the supplied username is available
 func isUsernameAvailable(username string) bool {
 	var userList []user
-	DB.Find(&userList)
+	DB_user.Find(&userList)
 	for _, u := range userList {
 		if u.Username == username {
 			return false
 		}
 	}
 	return true
+}
+
+// Delete user by id
+func deleteUserById(id int) {
+	fmt.Println(id)
+	DB_user.Delete(&user{}, id)
+}
+
+// all users
+func getAllUsers() []user {
+	var userList []user
+	DB_user.Find(&userList)
+	return userList
 }

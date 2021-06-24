@@ -7,6 +7,7 @@ func initializeRoutes() {
 	// Use the setUserStatus middleware for every route to set a flag
 	// indicating whether the request was from an authenticated user or not
 	router.Use(setUserStatus())
+	router.Use(CORSMiddleware())
 
 	// Handle the index route
 	router.GET("/", showIndexPage)
@@ -35,6 +36,10 @@ func initializeRoutes() {
 		// Handle POST requests at /u/register
 		// Ensure that the user is not logged in by using the middleware
 		userRoutes.POST("/register", ensureNotLoggedIn(), register)
+
+		userRoutes.GET("/manage", ensureLoggedIn(), manageUsers)
+
+		userRoutes.POST("/delete/:user_id", ensureLoggedIn(), deleteUser)
 	}
 
 	// Group article related routes together
@@ -43,6 +48,8 @@ func initializeRoutes() {
 		// Handle GET requests at /article/view/some_article_id
 		articleRoutes.GET("/view/:article_id", getArticle)
 
+		articleRoutes.GET("/user/:user_id", getArticleByUser)
+
 		// Handle the GET requests at /article/create
 		// Show the article creation page
 		// Ensure that the user is logged in by using the middleware
@@ -50,9 +57,9 @@ func initializeRoutes() {
 
 		// Handle POST requests at /article/create
 		// Ensure that the user is logged in by using the middleware
-		articleRoutes.POST("/create", ensureLoggedIn(), createArticle)
+		articleRoutes.POST("/create", createArticle)
 
-		//articleRoutes.GET("/check", similaritiesArticle)
+		articleRoutes.POST("/check", ensureNotLoggedIn(), similaritiesArticle)
 	}
 
 }

@@ -11,7 +11,7 @@ import (
 type WikiArticle struct {
 	Title        string
 	Content      string
-	Similarities []string
+	Similarities []Similarity
 }
 
 func wiki_api(toSearch string) (WikiArticle, error) {
